@@ -1,0 +1,49 @@
+# Balanced Django Buyer Demo
+
+This demo site shows how to get up and running tokenizing a card with [Django](https://docs.djangoproject.com) and [Balanced](https://www.balancedpayments.com).
+
+To run, create a [virtual environment](http://www.doughellmann.com/articles/pythonmagazine/completely-different/2008-05-virtualenvwrapper/index.html) and then run:
+
+    pip install -r requirements.txt
+
+And create a datebase (you can change the configuration in settings.py to use something other than postgres) and migrate the database:
+
+     python manage.py migrate
+
+
+
+
+
+
+And then visit [http://127.0.0.1:8000](http://127.0.0.1:8000)
+
+## To add Balanced to your own Django project:
+
+Install Balanced
+
+    pip install balanced
+
+Add balanced-django to your middleware
+
+    MIDDLEWARE_CLASSES += (
+        ...
+        'balanced_django.middleware.BalancedMiddleware',
+        ...
+    )
+
+as well as adding your balanced configuration
+
+    BALANCED = {
+        'secret': '7b7a51ccb10c11e19c0a026ba7e239a9',
+    }
+
+Now we can write views that use Balanced:
+
+    from django.http import HttpResponse
+
+    import balanced
+
+    def index(request):
+        return HttpResponse(balanced.Marketplace.my_marketplace)
+
+Learn more at [balancedpayments.com](www.balancedpayments.com/docs/python)

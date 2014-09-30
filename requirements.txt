@@ -1,0 +1,3 @@
+balanced
+Django==1.7
+psycopg2
