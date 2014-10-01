@@ -1,0 +1,13 @@
+<h1>Welcome to Easy Donor</h1>
+<h3>Please select a charity to donate to:</h3>
+{% if charity_list %}
+    <ul>
+        {% for charity in charity_list %}
+            <li><a href="{% url 'easy_donor:charity' charity.id %}">{{ charity.business_name }}</a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No charities are available to donaate.</p>
+{% endif %}
+
+<p1>Looking to sign up your charity? <a href="{% url 'easy_donor:sign_up'%}">Sign up here!</a></p1>

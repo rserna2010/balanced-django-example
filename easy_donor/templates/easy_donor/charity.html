@@ -1,0 +1,24 @@
+<h1>{{ charity.business_name }} Profile</h1>
+<p1>{{ charity.name }}</p1>
+<ul>
+    {% for choice in question.choice_set.all %}
+        <li>{{ choice.choice_text }}</li>
+    {% endfor %}
+</ul>
+
+{% if charity.description %}
+    <ul>
+        <li>About: {{ charity.description }}</li>
+    </ul>
+{% else %}
+    <li>No description provided</li>
+{% endif %}
+
+{% if charity.url %}
+    <ul>
+        <li><a href="{{ charity.id }}">{{ charity.url }}</a></li>
+    </ul>
+{% else %}
+    <li>No url provided</li>
+{% endif %}
+
