@@ -1,6 +1,7 @@
 <h1>Sign Up Your Charity Below:</h1>
+
 <form action="{% url 'easy_donor:sign_up' %}" method="post">
     {% csrf_token %}
-    <label for="your_name">Your name: </label><input id="your_name" type="text" name="your_name" value="{{ current_name }}">
-    <input type="submit" value="Apply">
+    {{ form }}
+    <input type="submit" value="Submit" />
 </form>
