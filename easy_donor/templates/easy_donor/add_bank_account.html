@@ -1,0 +1,22 @@
+<head>
+    {% load staticfiles %}
+    <script src="{% static "js/jquery.js" %}"></script>
+    <script type="text/javascript" src="https://js.balancedpayments.com/1.1/balanced.js"></script>
+    <script src="{% static "js/tokenize.js" %}"></script>
+</head>
+
+<form role="form">
+    <div>
+        <label>Account Holder's Name</label>
+        <input type="text" id="ba-name" autocomplete="off" data-charity_id="{{ charity_id }}" placeholder="John Doe" />
+    </div>
+    <div>
+        <label>Routing Number</label>
+        <input type="text" id="ba-routing" autocomplete="off" placeholder="322271627" />
+    </div>
+    <div>
+        <label>Account Number</label>
+        <input type="text" id="ba-number" autocomplete="off" placeholder="9900000000" />
+    </div>
+    <input type="submit" id="ba-submit" value="Submit" />
+</form>
