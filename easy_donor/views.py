@@ -4,7 +4,7 @@ from django import forms
 from django.forms import ModelForm
 from django.conf import settings
 
-from easy_donor.models import Charity
+from easy_donor.models import Charity, Order
 
 import balanced
 balanced.configure(settings.BALANCED['secret'])
@@ -14,11 +14,6 @@ def index(request):
     charity_list = Charity.objects.all()
     context = {'charity_list': charity_list}
     return render(request, 'easy_donor/index.html', context)
-
-
-def donate(request):
-    return HttpResponse("Please sign up")
-
 
 def charity(request, charity_id):
     charity = get_object_or_404(Charity, pk=charity_id)
@@ -49,34 +44,83 @@ def sign_up(request):
             context = {'charity_id': new_charity.id}
             print context
             # redirect to a new URL:
-            return render(request, 'easy_donor/add_bank_account.html', {'charity_id': new_charity.id})
+            return render(request, 'easy_donor/add_funding_instrument.html', {'charity_id': new_charity.id})
     # if a GET (or any other method) we'll create a blank form
     else:
         form = CharityForm()
     return render(request, 'easy_donor/sign_up.html', {'form': form})
 
-def add_bank_account(request):
+def add_funding_instrument(request):
     # if this is a POST request we need to process the form data
-    print 'REQUES'
+    print request
     if request.method == 'POST':
-        balanced_bank_href = request.POST['href']
+        funding_instrument_href = request.POST['href']
         charity_id= request.POST['charity_id']
         charity = Charity.objects.get(pk=charity_id)
-        charity.funding_instrument=balanced_bank_href
+        charity.funding_instrument=funding_instrument_href
         charity.save()
 
-        # Fetch the Balanced bank account resource, this associates the token
-        # to your marketplace
-        bank_account = balanced.BankAccount.fetch(balanced_bank_href)
+        # Fetch the Balanced bank account resource, this associates the
+        # token to your marketplace
+        bank_account = balanced.BankAccount.fetch(funding_instrument_href)
+        print bank_account.href
 
         # Associate the bank account to the appropriate Balanced customer
         bank_account.associate_to_customer(charity.balanced_href)
-
         response = JsonResponse({'location': 'finished'})
         return response
 
     # if a GET (or any other method) we'll create a blank form
-    return render(request, 'easy_donor/add_bank_account.html')
+    return render(request, 'easy_donor/add_funding_instrument.html')
+
+
+def donate(request):
+    print request
+    if request.method == 'POST':
+        funding_instrument_href = request.POST['href']
+        amount = request.POST['amount']
+        amount = float(amount) * 100
+        amount = int(amount)
+        print amount
+        charity_id = '63'
+        # Fetch the donors card to debit
+        card = balanced.Card.fetch(funding_instrument_href)
+        print 'Card'
+        print card.href
+        # Fetch the merchant, which is the charity in this example
+        charity = Charity.objects.get(pk=charity_id)
+        merchant = balanced.Customer.fetch(charity.balanced_href)
+
+        # create an Order
+        order = merchant.create_order(desciption=charity.business_name)
+
+        # debit the donor for the amount of the listing
+        debit = order.debit_from(
+            source=card,
+            amount=(amount * 100),
+            appears_on_statement_as=charity.business_name,
+        )
+
+        # credit the charity for the amount of the donation
+        #
+        # First, fetch the onwer's bank account to credit
+        bank_account = balanced.BankAccount.fetch(charity.funding_instrument)
+
+        order.credit_to(
+            destination=bank_account,
+            amount=(amount),
+        )
+
+        # Store the debit and it's order to your database
+        order = Order.(charity=charity_id, amount=amount,
+                             balanced_href=order.href)
+        order.save()
+
+        print "ORDER ID"
+        print order.id
+
+        response = JsonResponse({'location': 'finished'})
+        return response
 
 
 class CharityForm(ModelForm):

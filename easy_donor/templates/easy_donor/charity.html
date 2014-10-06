@@ -1,3 +1,11 @@
+<head>
+    {% load staticfiles %}
+    <script src="{% static "js/jquery.js" %}"></script>
+    <script type="text/javascript" src="https://js.balancedpayments.com/1.1/balanced.js"></script>
+    <script src="{% static "js/tokenize.js" %}"></script>
+</head>
+
+
 <h1>{{ charity.business_name }} Profile</h1>
 <p1>{{ charity.name }}</p1>
 <ul>
@@ -21,4 +29,32 @@
 {% else %}
     <li>No url provided</li>
 {% endif %}
+<div>
+    <label>Amount ($)</label>
+    <input type="text" id="amount" autocomplete="off" placeholder="20" />
+</div>
+<form role="form">
+    <div>
+        <label>Name on Card</label>
+        <input type="text" id="cc-name" autocomplete="off" placeholder="John Doe" />
+    </div>
+    <div>
+        <label>Card Number</label>
+        <input type="text" id="cc-number" autocomplete="off" placeholder="4111111111111111" maxlength="16" />
+    </div>
+    <div>
+        <label>Expiration</label>
+        <input type="text" id="cc-ex-month" autocomplete="off" placeholder="01" maxlength="2" />
+        <input type="text" id="cc-ex-year" autocomplete="off" placeholder="2013" maxlength="4" />
+    </div>
+    <div>
+        <label>Card Verification Code (CVV)</label>
+        <input type="text" id="ex-cvv" autocomplete="off" placeholder="453" maxlength="4" />
+    </div>
+    <div>
+        <label>Postal Code</label>
+        <input type="text" id="postal-code" autocomplete="off" placeholder="453" />
+    </div>
 
+    <input type="submit" id="cc-submit" value="Donate Now" />
+</form>

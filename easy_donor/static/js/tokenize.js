@@ -5,21 +5,34 @@ $(document).ready(function () {
         if (response.status_code === 201) {
             var fundingInstrument = response.cards != null ? response.cards[0] : response.bank_accounts[0];
             var charity_id = $('#ba-name').attr('data-charity_id')
-            // Call your backend
-            console.log(fundingInstrument.href)
-            jQuery.post("/easy_donor/add_bank_account/", {
-                href: fundingInstrument.href,
-                charity_id: charity_id
-            }, function(r) {
-                console.log(r)
-                console.log(r.status)
-                console.log(r.data)
-                // Check your backend response
-                if (r.location === 'finished') {
-                    $(location).attr('href', '/easy_donor');
-                } else {
-                }
-            });
+            if ( $('#ba-name').length ){
+                jQuery.post("/easy_donor/add_funding_instrument/", {
+                    href: fundingInstrument.href,
+                    charity_id: charity_id
+                }, function(r) {
+                    console.log(r)
+                    console.log(r.status)
+                    console.log(r.data)
+                    // Check your backend response
+                    if (r.location === 'finished') {
+                        $(location).attr('href', '/easy_donor');
+                    } else {
+                    }
+                });
+            } else {
+                var amount = $('#amount').val();
+                jQuery.post("/easy_donor/donate/", {
+                    href: fundingInstrument.href,
+                    amount: amount
+                }, function(r) {
+                    // Check your backend response
+                    if (r.location === 'finished') {
+                        $(location).attr('href', '/easy_donor');
+                    } else {
+                    }
+                });
+            }
+
         } else {
             // Failed to tokenize, your error logic here
         }
