@@ -4,7 +4,7 @@ from django import forms
 from django.forms import ModelForm
 from django.conf import settings
 
-from easy_donor.models import Charity, Order
+from easy_donor.models import Charity, Donation
 
 import balanced
 balanced.configure(settings.BALANCED['secret'])
@@ -14,6 +14,7 @@ def index(request):
     charity_list = Charity.objects.all()
     context = {'charity_list': charity_list}
     return render(request, 'easy_donor/index.html', context)
+
 
 def charity(request, charity_id):
     charity = get_object_or_404(Charity, pk=charity_id)
@@ -42,7 +43,6 @@ def sign_up(request):
             new_charity.save()
 
             context = {'charity_id': new_charity.id}
-            print context
             # redirect to a new URL:
             return render(request, 'easy_donor/add_funding_instrument.html', {'charity_id': new_charity.id})
     # if a GET (or any other method) we'll create a blank form
@@ -52,7 +52,6 @@ def sign_up(request):
 
 def add_funding_instrument(request):
     # if this is a POST request we need to process the form data
-    print request
     if request.method == 'POST':
         funding_instrument_href = request.POST['href']
         charity_id= request.POST['charity_id']
@@ -63,30 +62,26 @@ def add_funding_instrument(request):
         # Fetch the Balanced bank account resource, this associates the
         # token to your marketplace
         bank_account = balanced.BankAccount.fetch(funding_instrument_href)
-        print bank_account.href
 
         # Associate the bank account to the appropriate Balanced customer
         bank_account.associate_to_customer(charity.balanced_href)
         response = JsonResponse({'location': 'finished'})
         return response
 
-    # if a GET (or any other method) we'll create a blank form
     return render(request, 'easy_donor/add_funding_instrument.html')
 
 
 def donate(request):
-    print request
     if request.method == 'POST':
         funding_instrument_href = request.POST['href']
         amount = request.POST['amount']
         amount = float(amount) * 100
         amount = int(amount)
-        print amount
-        charity_id = '63'
+        charity_id = request.POST['charity_id']
+
         # Fetch the donors card to debit
         card = balanced.Card.fetch(funding_instrument_href)
-        print 'Card'
-        print card.href
+
         # Fetch the merchant, which is the charity in this example
         charity = Charity.objects.get(pk=charity_id)
         merchant = balanced.Customer.fetch(charity.balanced_href)
@@ -112,12 +107,9 @@ def donate(request):
         )
 
         # Store the debit and it's order to your database
-        order = Order.(charity=charity_id, amount=amount,
-                             balanced_href=order.href)
+        order = Donation(charity=charity_id, amount=amount,
+                         balanced_order_href=order.href)
         order.save()
-
-        print "ORDER ID"
-        print order.id
 
         response = JsonResponse({'location': 'finished'})
         return response

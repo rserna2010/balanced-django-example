@@ -20,33 +20,8 @@ class Migration(migrations.Migration):
                 ('phone', models.IntegerField(max_length=12)),
                 ('balanced_href', models.CharField(max_length=200)),
                 ('funding_instrument', models.CharField(max_length=200)),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='Donor',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=200)),
-                ('email', models.EmailField(max_length=254)),
-                ('phone', models.IntegerField(max_length=12)),
-                ('balanced_href', models.CharField(max_length=200)),
-                ('funding_instrument', models.CharField(max_length=200)),
-            ],
-            options={
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='Order',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('amount', models.IntegerField(default=0)),
-                ('balanced_href', models.CharField(max_length=200)),
-                ('charity', models.ForeignKey(to='easy_donor.Charity')),
-                ('donor', models.ForeignKey(to='easy_donor.Donor')),
+                ('description', models.CharField(max_length=200, null=True)),
+                ('url', models.CharField(max_length=200, null=True)),
             ],
             options={
             },

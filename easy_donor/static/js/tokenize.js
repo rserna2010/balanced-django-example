@@ -4,8 +4,8 @@ $(document).ready(function () {
         // Successful tokenization
         if (response.status_code === 201) {
             var fundingInstrument = response.cards != null ? response.cards[0] : response.bank_accounts[0];
-            var charity_id = $('#ba-name').attr('data-charity_id')
             if ( $('#ba-name').length ){
+                var charity_id = $('#ba-name').attr('data-charity_id');
                 jQuery.post("/easy_donor/add_funding_instrument/", {
                     href: fundingInstrument.href,
                     charity_id: charity_id
@@ -20,10 +20,12 @@ $(document).ready(function () {
                     }
                 });
             } else {
+                var charity_id = $('#cc-name').attr('data-charity_id')
                 var amount = $('#amount').val();
                 jQuery.post("/easy_donor/donate/", {
                     href: fundingInstrument.href,
-                    amount: amount
+                    amount: amount,
+                    charity_id: charity_id
                 }, function(r) {
                     // Check your backend response
                     if (r.location === 'finished') {
