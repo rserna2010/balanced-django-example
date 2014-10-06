@@ -59,16 +59,19 @@ def add_bank_account(request):
     # if this is a POST request we need to process the form data
     print 'REQUES'
     if request.method == 'POST':
-        print "POST"
-        print request.POST['href']
-        print request.POST['charity_id']
-        charity = Charity.objects.get(pk=request.POST['charity_id'])
-        charity.funding_instrument=request.POST['href']
+        balanced_bank_href = request.POST['href']
+        charity_id= request.POST['charity_id']
+        charity = Charity.objects.get(pk=charity_id)
+        charity.funding_instrument=balanced_bank_href
         charity.save()
-        print charity.id
-        print charity.funding_instrument
-            # Create a Balanced Customer
-            # redirect to a new URL:
+
+        # Fetch the Balanced bank account resource, this associates the token
+        # to your marketplace
+        bank_account = balanced.BankAccount.fetch(balanced_bank_href)
+
+        # Associate the bank account to the appropriate Balanced customer
+        bank_account.associate_to_customer(charity.balanced_href)
+
         response = JsonResponse({'location': 'finished'})
         return response
 
