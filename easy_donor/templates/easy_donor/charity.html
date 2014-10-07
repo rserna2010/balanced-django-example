@@ -6,7 +6,7 @@
 </head>
 
 
-<h1>{{ charity.business_name }} Profile</h1>
+<h1>Donate to {{ charity.business_name }}</h1>
 <p1>{{ charity.name }}</p1>
 <ul>
     {% for choice in question.choice_set.all %}
@@ -33,6 +33,7 @@
     <label>Amount ($)</label>
     <input type="text" id="amount" autocomplete="off" placeholder="20" />
 </div>
+<P>To donate please input your credit card information below:</P>
 <form role="form">
     <div>
         <label>Name on Card</label>
