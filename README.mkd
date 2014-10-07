@@ -18,6 +18,3 @@ Then turn run:
 And then visit http://127.0.0.1:8000/easy_donor
 
 You'll need to seed the database by creating a charity first. 
-
-
-And then visit [http://127.0.0.1:8000](http://127.0.0.1:8000)
