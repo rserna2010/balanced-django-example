@@ -10,6 +10,8 @@ And create a datebase (you can change the configuration in settings.py to use so
 
      python manage.py migrate
 
+Edit the api secret to properly configure the Balanced in settings.py. 
+
 Then turn run:
 
     python manage.py runserver

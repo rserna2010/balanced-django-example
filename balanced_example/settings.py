@@ -92,5 +92,5 @@ TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 
 BALANCED = {
-    'secret': 'YOUR_API_KEY_SECRET'
+    'secret': 'YOU_API_KEY_SECRET'
 }
