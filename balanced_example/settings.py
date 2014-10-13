@@ -69,6 +69,17 @@ DATABASES = {
     }
 }
 
+import sys
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'balanced_django',
+        'USER': 'balanced_django',
+        'PASSWORD': 'balanced_django',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
@@ -92,5 +103,5 @@ TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 
 
 BALANCED = {
-    'secret': 'YOU_API_KEY_SECRET'
+    'secret': 'YOUR_API_KEY_SECRET'
 }

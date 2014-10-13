@@ -116,6 +116,8 @@ def donate(request):
 
 
 class CharityForm(ModelForm):
+    ein = forms.CharField(max_length=9, min_length=9)
+
     class Meta:
         model = Charity
         fields = ['business_name', 'ein', 'email', 'phone', 'description',

@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.core.urlresolvers import reverse
+from django.conf import settings
 
 
 
@@ -15,13 +16,21 @@ FIXTURES = {
         'expiration_month': 12,
         'expiration_year': 2020,
         'name': 'Heisenberg'
-        },
+    },
     'bank_account': {
         'account_number': 9900000001,
-        'routing_number': 121000358,  # SMCU
+        'routing_number': 121000358,
         'account_type': 'checking',
         'name': 'Walter White',
-        }
+    },
+    'charity': {
+        'business_name': 'Salvation Army',
+        'ein': '123456789',
+        'email': 'sal@salvationarmy.com',
+        'phone':'7131234567',
+        'description': 'An international charitable organization.',
+        'url': 'http://www.salvationarmyusa.org'
+    }
 }
 
 def create_charity():
@@ -45,9 +54,8 @@ class ModelsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.api_key = balanced.APIKey().save()
-        balanced.configure(cls.api_key.secret)
-        cls.marketplace = balanced.Marketplace().save()
+        balanced.configure(settings.BALANCED['secret'])
+
         card = balanced.Card(**FIXTURES['card']).save()
 
         # add some money to the escrow account
@@ -80,19 +88,6 @@ class ModelsTest(TestCase):
 
 
 class CharityModelTests(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.api_key = balanced.APIKey().save()
-        balanced.configure(cls.api_key.secret)
-        cls.marketplace = balanced.Marketplace().save()
-        card = balanced.Card(**FIXTURES['card']).save()
-
-        # add some money to the escrow account
-        card.debit(amount=100000)
-
-    def setUp(self):
-        pass
-
     def test_ein_not_string(self):
 
         charity = Charity(business_name="Salvation Army",
@@ -125,6 +120,42 @@ class CharityViewTests(TestCase):
         charity = create_charity()
         response = self.client.get(reverse('easy_donor:charity', args=[1]))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, charity.name)
+        self.assertContains(response, charity.business_name)
         self.assertContains(response, charity.url)
         self.assertContains(response, charity.description)
+
+class CharityFormTests(TestCase):
+    def test_create_charity_form(self):
+        response = self.client.post(reverse('easy_donor:index'),
+                                    {'business_name': 'Salvation Army',
+                                     'ein': '123456789',
+                                     'email': 'sal@salvationarmy.com',
+                                     'phone':'7131234567',
+                                     'description': 'An international '
+                                                    'charitable organization.',
+                                     'url': 'http://www.salvationarmyusa.org'})
+        self.assertEqual(response.status_code, 200)
+
+    def test_charity_form_with_short_ein(self):
+        response = self.client.post(reverse('easy_donor:sign_up'),
+                                    {'business_name': 'Salvation Army',
+                                     'ein': '12345678',
+                                     'email': 'sal@salvationarmy.com',
+                                     'phone':'7131234567',
+                                     'description': 'An international '
+                                                    'charitable organization.',
+                                     'url': 'http://www.salvationarmyusa.org'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ensure this value has at least 9 characters")
+
+    def test_charity_form_with_noninteger_ein(self):
+        response = self.client.post(reverse('easy_donor:sign_up'),
+                                        {'business_name': 'Salvation Army',
+                                         'ein': '12345678A',
+                                         'email': 'sal@salvationarmy.com',
+                                         'phone':'7131234567',
+                                         'description': 'An international '
+                                                        'charitable organization.',
+                                         'url': 'http://www.salvationarmyusa.org'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "value must be an integer")
