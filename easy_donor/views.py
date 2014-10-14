@@ -45,7 +45,8 @@ def sign_up(request):
 
             context = {'charity_id': new_charity.id}
             # redirect to a new URL:
-            return render(request, 'easy_donor/add_funding_instrument.html', {'charity_id': new_charity.id})
+            return render(request, 'easy_donor/add_funding_instrument.html',
+                          {'charity_id': new_charity.id})
     # if a GET (or any other method) we'll create a blank form
     else:
         form = CharityForm()
@@ -89,12 +90,12 @@ def donate(request):
         merchant = balanced.Customer.fetch(charity.balanced_href)
 
         # create an Order
-        order = merchant.create_order(desciption=charity.business_name)
+        order = merchant.create_order(description=charity.business_name).save()
 
         # debit the donor for the amount of the listing
         debit = order.debit_from(
             source=card,
-            amount=(amount * 100),
+            amount=(amount),
             appears_on_statement_as=charity.business_name,
         )
 
@@ -109,9 +110,9 @@ def donate(request):
         )
 
         # Store the debit and it's order to your database
-        order = Donation(charity=charity_id, amount=amount,
+        donation = Donation(charity=charity_id, amount=amount,
                          balanced_order_href=order.href)
-        order.save()
+        donation.save()
 
         response = JsonResponse({'location': 'finished'})
         return response
@@ -137,4 +138,3 @@ class CharityForm(ModelForm):
         model = Charity
         fields = ['business_name', 'ein', 'email', 'phone', 'description',
                   'url']
-

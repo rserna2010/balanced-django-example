@@ -56,7 +56,6 @@ class ModelsTest(TestCase):
         balanced.configure(settings.BALANCED['secret'])
 
         card = balanced.Card(**FIXTURES['card']).save()
-
         # add some money to the escrow account
         card.debit(amount=100000)
 
@@ -66,7 +65,7 @@ class ModelsTest(TestCase):
                               email='sal@salvationarmy.com',
                               phone='7131234567',
                               balanced_href=bank_account.href,
-                              funding_instrument="/cards/CC6E5YUgwWa9IoKyKPyFW0rw",
+                              funding_instrument=bank_account.href,
                               description="An international charitable organization.",
                               url='http://www.salvationarmyusa.org')
         cls.charity.save()
@@ -115,6 +114,7 @@ class CharityViewTests(TestCase):
         self.assertContains(response, "Salvation Army")
         self.assertQuerysetEqual(response.context['charity_list'],
                                  ['<Charity: Salvation Army>'])
+
 
 class CharityFormTests(TestCase):
     def test_create_charity_form(self):
@@ -180,8 +180,7 @@ class CharityFormTests(TestCase):
 
     def test_charity_add_funding_instrument(self):
         charity = create_charity()
-        bank_account = balanced.BankAccount(**FIXTURES['bank_account'])
-        bank_account.save()
+        bank_account = balanced.BankAccount(**FIXTURES['bank_account']).save()
         response = self.client.post(
             reverse('easy_donor:add_funding_instrument'),
             {
@@ -192,5 +191,82 @@ class CharityFormTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "finished")
 
+
+class DonateViewsTests(TestCase):
+    def test_create_donation(self):
+        create_charity_response = self.client.post(reverse('easy_donor:sign_up'),
+                                    {'business_name': 'Salvation Army',
+                                     'ein': '123456789',
+                                     'email': 'sal@salvationarmy.com',
+                                     'phone':'7131234567',
+                                     'description': 'An international '
+                                                    'charitable organization.',
+                                     'url': 'http://www.salvationarmyusa.org'})
+
+        bank_account = balanced.BankAccount(**FIXTURES['bank_account']).save()
+        create_bank_account_response = self.client.post(
+            reverse('easy_donor:add_funding_instrument'),
+            {
+                'href':  bank_account.href,
+                'charity_id': create_charity_response.context['charity_id']
+            }
+        )
+
+        card = balanced.Card(**FIXTURES['card']).save()
+        response = self.client.post(
+            reverse('easy_donor:donate'),
+            {
+                'href':  card.href,
+                'amount':  5,
+                'charity_id': create_charity_response.context['charity_id']
+            }
+        )
+        self.assertEqual(response.status_code, 200)
+        donation = Donation.objects.get(pk=1)
+        self.assertEqual(donation.amount, 500)
+        self.assertRegexpMatches(donation.balanced_order_href, '/orders/')
+
+        # confirm Balanced order amounts
+        order = balanced.Order.fetch(donation.balanced_order_href)
+        self.assertEqual(order.amount, 500)
+        self.assertEqual(order.description, 'Salvation Army')
+        self.assertEqual(order.amount_escrowed, 0)
+        charity = Charity.objects.get(
+            pk=create_charity_response.context['charity_id'])
+        self.assertEqual(order.merchant.href, charity.balanced_href)
+
+
+    def test_create_donation_with_decimal_amount(self):
+        create_charity_response = self.client.post(reverse('easy_donor:sign_up'),
+                                                   {'business_name': 'Salvation Army',
+                                                    'ein': '123456789',
+                                                    'email': 'sal@salvationarmy.com',
+                                                    'phone':'7131234567',
+                                                    'description': 'An international '
+                                                                   'charitable organization.',
+                                                    'url': 'http://www.salvationarmyusa.org'})
+
+        bank_account = balanced.BankAccount(**FIXTURES['bank_account']).save()
+        create_bank_account_response = self.client.post(
+            reverse('easy_donor:add_funding_instrument'),
+            {
+                'href':  bank_account.href,
+                'charity_id': create_charity_response.context['charity_id']
+            }
+        )
+
+        card = balanced.Card(**FIXTURES['card']).save()
+        response = self.client.post(
+            reverse('easy_donor:donate'),
+            {
+                'href':  card.href,
+                'amount':  5.00,
+                'charity_id': create_charity_response.context['charity_id']
+            }
+        )
+        self.assertEqual(response.status_code, 200)
+        donation = Donation.objects.get(pk=2)
+        self.assertEqual(donation.amount, 500)
+        self.assertRegexpMatches(donation.balanced_order_href, '/orders/')
 
 
