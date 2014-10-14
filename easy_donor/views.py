@@ -51,13 +51,14 @@ def sign_up(request):
         form = CharityForm()
     return render(request, 'easy_donor/sign_up.html', {'form': form})
 
+
 def add_funding_instrument(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         funding_instrument_href = request.POST['href']
         charity_id= request.POST['charity_id']
         charity = Charity.objects.get(pk=charity_id)
-        charity.funding_instrument=funding_instrument_href
+        charity.funding_instrument = funding_instrument_href
         charity.save()
 
         # Fetch the Balanced bank account resource, this associates the

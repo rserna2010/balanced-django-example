@@ -127,7 +127,7 @@ class CharityFormTests(TestCase):
                                                     'charitable organization.',
                                      'url': 'http://www.salvationarmyusa.org'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['charity_id'], 1)
+        self.assertEqual(response.context['charity_id'], 2)
 
     def test_charity_form_with_short_ein(self):
         response = self.client.post(reverse('easy_donor:sign_up'),
@@ -177,3 +177,20 @@ class CharityFormTests(TestCase):
                                      'url': 'salvationarmyusa'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Please enter a valid URL")
+
+    def test_charity_add_funding_instrument(self):
+        charity = create_charity()
+        bank_account = balanced.BankAccount(**FIXTURES['bank_account'])
+        bank_account.save()
+        response = self.client.post(
+            reverse('easy_donor:add_funding_instrument'),
+            {
+                'href':  bank_account.href,
+                'charity_id': charity.id
+            }
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "finished")
+
+
+
