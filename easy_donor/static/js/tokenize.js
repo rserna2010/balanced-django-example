@@ -10,9 +10,6 @@ $(document).ready(function () {
                     href: fundingInstrument.href,
                     charity_id: charity_id
                 }, function(r) {
-                    console.log(r)
-                    console.log(r.status)
-                    console.log(r.data)
                     // Check your backend response
                     if (r.location === 'finished') {
                         $(location).attr('href', '/easy_donor');
@@ -22,21 +19,22 @@ $(document).ready(function () {
             } else {
                 var charity_id = $('#cc-name').attr('data-charity_id')
                 var amount = $('#amount').val();
-                jQuery.post("/easy_donor/donate/", {
-                    href: fundingInstrument.href,
-                    amount: amount,
-                    charity_id: charity_id
-                }, function(r) {
-                    // Check your backend response
-                    if (r.location === 'finished') {
-                        $(location).attr('href', '/easy_donor');
-                    } else {
-                    }
-                });
+                if (valid_amount(amount)) {
+                    jQuery.post("/easy_donor/donate/", {
+                        href: fundingInstrument.href,
+                        amount: amount,
+                        charity_id: charity_id
+                    }, function(r) {
+                        // Check your backend response
+                        if (r.location === 'finished') {
+                            $(location).attr('href', '/easy_donor');
+                        } else {
+                        }
+                    });
+                }
             }
-
         } else {
-            // Failed to tokenize, your error logic here
+            alert(response.errors[0]['description'])
         }
 
         // Debuging, just displays the tokenization result in a pretty div
@@ -70,15 +68,23 @@ $(document).ready(function () {
         e.preventDefault();
 
         $('#response').hide();
+        var account_owner_name = $('#ba-name').val()
+        var account_number = $('#ba-number').val()
+        var routing_number = $('#ba-routing').val()
 
-        var payload = {
-            name: $('#ba-name').val(),
-            account_number: $('#ba-number').val(),
-            routing_number: $('#ba-routing').val()
-        };
+        if (account_owner_name == "" || account_number == "" ||
+            routing_number =="") {
+            alert('Please ensure all fields are complete');
 
-        // Tokenize bank account
-        balanced.bankAccount.create(payload, handleResponse);
+        } else {
+            var payload = {
+                name: account_owner_name,
+                account_number: account_number,
+                routing_number: routing_number
+            };
+            // Tokenize bank account
+            balanced.bankAccount.create(payload, handleResponse);
+        }
     });
 
 
@@ -114,3 +120,11 @@ $.ajaxSetup({
     }
 });
 
+function valid_amount(amount) {
+    var regex = /(?=.)^\$?(([1-9][0-9]{0,2}(,[0-9]{3})*)|[0-9]+)?(\.[0-9]{1,2})?$/g;
+    if(regex.test(amount)) {
+        return true
+    } else {
+        alert("Please input valid amount");
+    }
+}
