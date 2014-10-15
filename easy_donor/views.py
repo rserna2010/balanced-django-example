@@ -8,7 +8,12 @@ from easy_donor.models import Charity, Donation
 
 import re
 import balanced
-balanced.configure(settings.BALANCED['secret'])
+
+try:
+    balanced.Marketplace.my_marketplace
+except:
+    # self.mp = balanced.Marketplace().save()
+    balanced.configure(settings.BALANCED['secret'])
 
 
 def index(request):

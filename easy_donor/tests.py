@@ -20,7 +20,7 @@ FIXTURES = {
         'routing_number': 121000358,
         'account_type': 'checking',
         'name': 'Walter White',
-    },
+        },
     'charity': {
         'business_name': 'Salvation Army',
         'ein': '123456789',
@@ -53,6 +53,7 @@ class ModelsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        balanced.configure(None)
         api_key = balanced.APIKey().save()
         balanced.configure(api_key.secret)
         marketplace = balanced.Marketplace().save()
@@ -72,22 +73,8 @@ class ModelsTest(TestCase):
                               url='http://www.salvationarmyusa.org')
         cls.charity.save()
 
-    def setUp(self):
-        pass
 
-    def test_create_credit(self):
-        bank_account = balanced.BankAccount(**FIXTURES['bank_account'])
-        bank_account.save()
-        credit = bank_account.credit(amount=1000)
-        self.assertEqual(credit.amount, 1000)
-
-    def test_create_bank_account(self):
-        bank_account = balanced.BankAccount(**FIXTURES['bank_account'])
-        bank_account.save()
-        self.assertTrue(bank_account.href)
-
-
-class CharityModelTests(TestCase):
+class CharityModelTests(ModelsTest):
     def test_ein_not_string(self):
 
         charity = Charity(business_name="Salvation Army",
@@ -102,14 +89,14 @@ class CharityModelTests(TestCase):
             charity.save()
 
 
-class CharityViewTests(TestCase):
+class CharityViewTests(ModelsTest):
     def test_index_view_with_no_charities(self):
         response = self.client.get(reverse('easy_donor:index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Easy")
         self.assertQuerysetEqual(response.context['charity_list'], [])
 
-    def test_index_view_with_no_charities(self):
+    def test_index_view_with_a_new_charities(self):
         create_charity()
         response = self.client.get(reverse('easy_donor:index'))
         self.assertEqual(response.status_code, 200)
@@ -118,7 +105,7 @@ class CharityViewTests(TestCase):
                                  ['<Charity: Salvation Army>'])
 
 
-class CharityFormTests(TestCase):
+class CharityFormTests(ModelsTest):
     def test_create_charity_form(self):
         response = self.client.post(reverse('easy_donor:sign_up'),
                                     {'business_name': 'Salvation Army',
@@ -129,7 +116,7 @@ class CharityFormTests(TestCase):
                                                     'charitable organization.',
                                      'url': 'http://www.salvationarmyusa.org'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['charity_id'], 2)
+        self.assertEqual(response.context['charity_id'], 3)
 
     def test_charity_form_with_short_ein(self):
         response = self.client.post(reverse('easy_donor:sign_up'),
@@ -145,25 +132,25 @@ class CharityFormTests(TestCase):
 
     def test_charity_form_with_noninteger_ein(self):
         response = self.client.post(reverse('easy_donor:sign_up'),
-                                        {'business_name': 'Salvation Army',
-                                         'ein': '12345678A',
-                                         'email': 'sal@salvationarmy.com',
-                                         'phone': '7131234567',
-                                         'description': 'An international '
-                                                        'charitable organization.',
-                                         'url': 'http://www.salvationarmyusa.org'})
+                                    {'business_name': 'Salvation Army',
+                                     'ein': '12345678A',
+                                     'email': 'sal@salvationarmy.com',
+                                     'phone': '7131234567',
+                                     'description': 'An international '
+                                                    'charitable organization.',
+                                     'url': 'http://www.salvationarmyusa.org'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "value must be an integer")
 
     def test_charity_form_with_invalid_phone_number(self):
         response = self.client.post(reverse('easy_donor:sign_up'),
-                                        {'business_name': 'Salvation Army',
-                                         'ein': '123456789',
-                                         'email': 'sal@salvationarmy.com',
-                                         'phone': '123b',
-                                         'description': 'An international '
-                                                        'charitable organization.',
-                                         'url': 'http://www.salvationarmyusa.org'})
+                                    {'business_name': 'Salvation Army',
+                                     'ein': '123456789',
+                                     'email': 'sal@salvationarmy.com',
+                                     'phone': '123b',
+                                     'description': 'An international '
+                                                    'charitable organization.',
+                                     'url': 'http://www.salvationarmyusa.org'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Phone number must be entered in the"
                                       " format")
@@ -194,16 +181,16 @@ class CharityFormTests(TestCase):
         self.assertContains(response, "finished")
 
 
-class DonateViewsTests(TestCase):
+class DonateViewsTests(ModelsTest):
     def test_create_donation(self):
         create_charity_response = self.client.post(reverse('easy_donor:sign_up'),
-                                    {'business_name': 'Salvation Army',
-                                     'ein': '123456789',
-                                     'email': 'sal@salvationarmy.com',
-                                     'phone':'7131234567',
-                                     'description': 'An international '
-                                                    'charitable organization.',
-                                     'url': 'http://www.salvationarmyusa.org'})
+                                                   {'business_name': 'Salvation Army',
+                                                    'ein': '123456789',
+                                                    'email': 'sal@salvationarmy.com',
+                                                    'phone':'7131234567',
+                                                    'description': 'An international '
+                                                                   'charitable organization.',
+                                                    'url': 'http://www.salvationarmyusa.org'})
 
         bank_account = balanced.BankAccount(**FIXTURES['bank_account']).save()
         create_bank_account_response = self.client.post(
