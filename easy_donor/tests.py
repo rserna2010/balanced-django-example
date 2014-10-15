@@ -58,21 +58,6 @@ class ModelsTest(TestCase):
         balanced.configure(api_key.secret)
         marketplace = balanced.Marketplace().save()
 
-        card = balanced.Card(**FIXTURES['card']).save()
-        # add some money to the escrow account
-        card.debit(amount=100000)
-
-        bank_account = balanced.BankAccount(**FIXTURES['bank_account']).save()
-        cls.charity = Charity(business_name="Salvation Army",
-                              ein='123456789',
-                              email='sal@salvationarmy.com',
-                              phone='7131234567',
-                              balanced_href=bank_account.href,
-                              funding_instrument=bank_account.href,
-                              description="An international charitable organization.",
-                              url='http://www.salvationarmyusa.org')
-        cls.charity.save()
-
 
 class CharityModelTests(ModelsTest):
     def test_ein_not_string(self):
@@ -116,7 +101,7 @@ class CharityFormTests(ModelsTest):
                                                     'charitable organization.',
                                      'url': 'http://www.salvationarmyusa.org'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['charity_id'], 3)
+        self.assertEqual(response.context['charity_id'], 2)
 
     def test_charity_form_with_short_ein(self):
         response = self.client.post(reverse('easy_donor:sign_up'),
