@@ -61,9 +61,9 @@ WSGI_APPLICATION = 'balanced_example.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'balanced_django',
-        'USER': 'balanced_django',
-        'PASSWORD': 'balanced_django',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -73,9 +73,9 @@ import sys
 if 'test' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'balanced_django',
-        'USER': 'balanced_django',
-        'PASSWORD': 'balanced_django',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
         'PORT': '',
     }
