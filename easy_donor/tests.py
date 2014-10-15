@@ -53,7 +53,9 @@ class ModelsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        balanced.configure(settings.BALANCED['secret'])
+        api_key = balanced.APIKey().save()
+        balanced.configure(api_key.secret)
+        marketplace = balanced.Marketplace().save()
 
         card = balanced.Card(**FIXTURES['card']).save()
         # add some money to the escrow account
