@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rserna2010/balanced-django-example.svg?branch=master)](https://travis-ci.org/rserna2010/balanced-django-example)
+
 # Balanced Django Buyer Demo
 
 This demo site shows you a basoc app for sending donations to charities using [Django](https://docs.djangoproject.com) and [Balanced](https://www.balancedpayments.com).
