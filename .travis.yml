@@ -1,14 +1,11 @@
 language: python
 python:
-  - "2.7.5"
-
-install: "pip install -r requirements.txt"
-
+  - 2.7
 addons:
   postgresql: "9.3"
-
+install:
+  - pip install -r requirements.txt
 before_script:
-  - psql -c 'create database easy_donor;' -U balanced_django
-
+  - psql -c 'create database easy_donor;' -U postgres
 script:
   - python manage.py test easy_donor
